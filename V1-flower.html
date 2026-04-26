@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOVE</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Mali', cursive;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg,
+                    #FFB3D1,
+                    #BFE7FF,
+                    #E2C6FF);
+            color: #5A4B6E;
+        }
+
+        .card {
+            width: 90%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 28px;
+            padding: 28px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            letter-spacing: 0.2px;
+            line-height: 1.8;
+            font-size: 14px;
+            opacity: 0.65;
+            margin-bottom: 22px;
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            margin-bottom: 20px;
+            overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gift-box {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 240px;
+            cursor: pointer;
+            transition: opacity 0.4s ease;
+            z-index: 5;
+        }
+
+        .gift-box.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .gift-box.shake {
+            animation: boxShake 0.5s ease-in-out 3;
+        }
+
+        @keyframes boxShake {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) rotate(0);
+            }
+
+            25% {
+                transform: translate(-50%, -50%) rotate(-4deg);
+            }
+
+            75% {
+                transform: translate(-50%, -50%) rotate(4deg);
+            }
+        }
+
+        .box-lid-group {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 130px;
+            transform-origin: center 80%;
+            transition:
+                transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.5s ease 0.5s;
+            z-index: 2;
+        }
+
+        .gift-box.opening .box-lid-group {
+            transform: translateX(-50%) translateY(-130px) rotate(-20deg);
+            opacity: 0;
+        }
+
+        .box-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 160px;
+            z-index: 1;
+        }
+
+        .bouquet-wrap {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 280px;
+            height: 320px;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s;
+            z-index: 4;
+        }
+
+        .bouquet-wrap.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .bouquet-wrap.sway {
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) rotate(-3deg);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) rotate(3deg);
+            }
+        }
+
+        .bouquet-wrap svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .burst {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .burst span {
+            position: absolute;
+            font-size: 22px;
+            opacity: 0;
+        }
+
+        .gift-box.opening~.burst span {
+            animation: burstOut 0.9s ease-out forwards;
+        }
+
+        @keyframes burstOut {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0.3);
+            }
+
+            30% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(1.2);
+            }
+        }
+
+        .floating-heart {
+            position: absolute;
+            font-size: 20px;
+            color: #FF7FA8;
+            opacity: 0;
+            pointer-events: none;
+            animation: floatUp 2.5s ease-out forwards;
+            z-index: 3;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.5);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-160px) scale(0.8);
+            }
+        }
+
+        .message {
+            display: none;
+            padding: 16px 18px;
+            background: linear-gradient(135deg,
+                    rgba(255, 179, 209, 0.2),
+                    rgba(226, 198, 255, 0.25));
+            border: 1px dashed rgba(139, 123, 175, 0.3);
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 18px;
+        }
+
+        .message.show {
+            display: block;
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            background-color: #8B7BAF;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 999px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(139, 123, 175, 0.35);
+            transition: all 0.25s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Mali', cursive;
+            margin: 4px;
+        }
+
+        .btn:hover {
+            background-color: #7A6AA0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 123, 175, 0.45);
+        }
+
+        .btn-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            min-height: 52px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 360px) {
+            .card {
+                padding: 20px 14px;
+                border-radius: 22px;
+            }
+
+            .title {
+                font-size: 18px;
+            }
+
+            .stage {
+                height: 290px;
+            }
+
+            .gift-box {
+                width: 185px;
+                height: 205px;
+            }
+
+            .box-lid-group {
+                width: 185px;
+                height: 110px;
+            }
+
+            .box-body {
+                width: 170px;
+                height: 135px;
+            }
+
+            .bouquet-wrap {
+                width: 240px;
+                height: 270px;
+            }
+
+            .message {
+                font-size: 13px;
+                padding: 12px;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 8px 18px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 420px) {
+            body {
+                align-items: flex-start;
+                padding: 10px 0;
+            }
+
+            .stage {
+                height: 240px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .bouquet-wrap {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @supports (padding: env(safe-area-inset-left)) {
+            body {
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <div class="title">รับดอกไม้จากเค้า</div>
+        <div class="subtitle" id="subtitle">กดกล่องเพื่อเปิดของขวัญ</div>
+
+        <div class="stage" id="stage">
+
+            <div class="gift-box" id="giftBox" onclick="openGift()">
+
+                <svg class="box-lid-group" viewBox="-20 -20 240 150" xmlns="http://www.w3.org/2000/svg">
+
+                    <path d="M 10 70 L 210 70 L 195 55 L 25 55 Z" fill="#D4BFFF" stroke="#9B7FD4" stroke-width="3.5"
+                        stroke-linejoin="round" />
+
+                    <rect x="10" y="70" width="200" height="55" fill="#E8D4FF" stroke="#9B7FD4" stroke-width="3.5"
+                        stroke-linejoin="round" rx="3" />
+
+                    <rect x="92" y="70" width="36" height="55" fill="#FFAFCC" stroke="#E88BB0" stroke-width="3" />
+                    <path d="M 96 55 L 124 55 L 120 70 L 100 70 Z" fill="#FFAFCC" stroke="#E88BB0" stroke-width="3"
+                        stroke-linejoin="round" />
+
+                    <path d="M 30 85 L 30 115" stroke="#FFF" stroke-width="4" fill="none" stroke-linecap="round"
+                        opacity="0.75" />
+
+                    <path d="M 98 62 Q 88 72, 82 90 L 98 92 Q 100 78, 106 68 Z" fill="#FF8FAB" stroke="#E88BB0"
+                        stroke-width="3" stroke-linejoin="round" />
+                    <path d="M 122 62 Q 132 72, 138 90 L 122 92 Q 120 78, 114 68 Z" fill="#FF8FAB" stroke="#E88BB0"
+                        stroke-width="3" stroke-linejoin="round" />
+
+                    <path d="M 110 35 Q 70 5, 50 20 Q 40 40, 60 55 Q 90 58, 110 45 Z" fill="#FFC9DD" stroke="#E88BB0"
+                        stroke-width="3" stroke-linejoin="round" />
+                    <path d="M 110 35 Q 150 5, 170 20 Q 180 40, 160 55 Q 130 58, 110 45 Z" fill="#FFC9DD"
+                        stroke="#E88BB0" stroke-width="3" stroke-linejoin="round" />
+
+                    <path d="M 78 25 Q 75 35, 85 45" fill="none" stroke="#E88BB0" stroke-width="2"
+                        stroke-linecap="round" opacity="0.6" />
+                    <path d="M 142 25 Q 145 35, 135 45" fill="none" stroke="#E88BB0" stroke-width="2"
+                        stroke-linecap="round" opacity="0.6" />
+
+                    <ellipse cx="110" cy="42" rx="14" ry="11" fill="#FF8FAB" stroke="#E88BB0" stroke-width="3" />
+                    <path d="M 104 40 Q 110 35, 116 40" fill="none" stroke="#E88BB0" stroke-width="2"
+                        stroke-linecap="round" opacity="0.5" />
+                </svg>
+
+                <svg class="box-body" viewBox="-10 -10 220 180" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 200 25 L 210 15 L 210 145 L 200 155 Z" fill="#B599E0" stroke="#9B7FD4" stroke-width="3.5"
+                        stroke-linejoin="round" />
+
+                    <path d="M 0 25 L 10 15 L 210 15 L 200 25 Z" fill="#D4BFFF" stroke="#9B7FD4" stroke-width="3.5"
+                        stroke-linejoin="round" />
+
+                    <rect x="0" y="25" width="200" height="130" fill="#E8D4FF" stroke="#9B7FD4" stroke-width="3.5"
+                        stroke-linejoin="round" rx="3" />
+
+                    <rect x="82" y="25" width="36" height="130" fill="#FFAFCC" stroke="#E88BB0" stroke-width="3" />
+                    <path d="M 86 15 L 114 15 L 118 25 L 82 25 Z" fill="#FF99BC" stroke="#E88BB0" stroke-width="3"
+                        stroke-linejoin="round" />
+
+                    <path d="M 20 45 L 20 135" stroke="#FFF" stroke-width="4" fill="none" stroke-linecap="round"
+                        opacity="0.75" />
+                </svg>
+
+            </div>
+
+            <div class="burst" id="burst"></div>
+
+            <!-- ช่อดอกไม้ -->
+            <div class="bouquet-wrap" id="bouquet">
+                <svg viewBox="0 -15 280 340" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <symbol id="daisy" viewBox="-35 -35 70 70">
+                            <ellipse cx="0" cy="-16" rx="10" ry="14" />
+                            <ellipse cx="15.2" cy="-4.9" rx="10" ry="14" transform="rotate(72 15.2 -4.9)" />
+                            <ellipse cx="9.4" cy="12.9" rx="10" ry="14" transform="rotate(144 9.4 12.9)" />
+                            <ellipse cx="-9.4" cy="12.9" rx="10" ry="14" transform="rotate(216 -9.4 12.9)" />
+                            <ellipse cx="-15.2" cy="-4.9" rx="10" ry="14" transform="rotate(288 -15.2 -4.9)" />
+                            <circle cx="0" cy="0" r="7" fill="#FFD966" stroke="#D4A93A" stroke-width="2.5" />
+                            <circle cx="-1.5" cy="-1.5" r="2" fill="#FFF" />
+                        </symbol>
+                    </defs>
+
+                    <ellipse cx="65" cy="115" rx="13" ry="24" fill="#B8E6A8" stroke="#6FBF7E" stroke-width="3"
+                        transform="rotate(-40 65 115)" />
+                    <ellipse cx="215" cy="115" rx="13" ry="24" fill="#B8E6A8" stroke="#6FBF7E" stroke-width="3"
+                        transform="rotate(40 215 115)" />
+                    <ellipse cx="80" cy="70" rx="10" ry="18" fill="#B8E6A8" stroke="#6FBF7E" stroke-width="3"
+                        transform="rotate(-25 80 70)" />
+                    <ellipse cx="200" cy="70" rx="10" ry="18" fill="#B8E6A8" stroke="#6FBF7E" stroke-width="3"
+                        transform="rotate(25 200 70)" />
+
+                    <use href="#daisy" x="85" y="45" width="60" height="60" fill="#FFC9DD" stroke="#E88BB0"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="135" y="45" width="60" height="60" fill="#D4BFFF" stroke="#9B7FD4"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="58" y="80" width="60" height="60" fill="#FFE27A" stroke="#D4A93A"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="110" y="70" width="68" height="68" fill="#FFAFCC" stroke="#D97A9E"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="165" y="80" width="60" height="60" fill="#B8DFFF" stroke="#7FBFE0"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="85" y="115" width="60" height="60" fill="#E8D4FF" stroke="#B599D4"
+                        stroke-width="3.5" />
+                    <use href="#daisy" x="135" y="115" width="60" height="60" fill="#FFE27A" stroke="#D4A93A"
+                        stroke-width="3.5" />
+
+                    <path d="M 75 165 L 205 165 Q 208 165, 207 168 L 155 280
+                             Q 150 290, 145 290 Q 140 290, 135 280 L 73 168
+                             Q 72 165, 75 165 Z" fill="#FFCDDD" stroke="#D97A9E" stroke-width="3.5"
+                        stroke-linejoin="round" />
+                    <path d="M 140 170 L 147 285" stroke="#D97A9E" stroke-width="2.5" fill="none" stroke-linecap="round"
+                        opacity="0.5" />
+                    <path d="M 165 185 Q 170 220, 168 255" stroke="#FFF" stroke-width="5" fill="none"
+                        stroke-linecap="round" opacity="0.85" />
+
+                    <path d="M 88 195 Q 140 202, 195 197 Q 198 207, 196 212
+                             Q 140 217, 86 210 Q 85 202, 88 195 Z" fill="#BFE7FF" stroke="#7FBFE0" stroke-width="3"
+                        stroke-linejoin="round" />
+
+                    <g stroke="#FFB3D1" stroke-width="5.5" stroke-linecap="round" fill="none">
+                        <line x1="38" y1="40" x2="48" y2="55" />
+                        <line x1="22" y1="70" x2="35" y2="75" />
+                        <line x1="30" y1="100" x2="42" y2="100" />
+                    </g>
+                    <g stroke="#FFB3D1" stroke-width="4.5" stroke-linecap="round">
+                        <line x1="25" y1="175" x2="35" y2="185" />
+                        <line x1="35" y1="175" x2="25" y2="185" />
+                        <line x1="240" y1="150" x2="250" y2="160" />
+                        <line x1="250" y1="150" x2="240" y2="160" />
+                        <line x1="240" y1="260" x2="250" y2="270" />
+                        <line x1="250" y1="260" x2="240" y2="270" />
+                    </g>
+                    <path d="M 45 145 Q 38 152, 42 160 Q 50 163, 54 156 Q 52 148, 47 148" fill="none" stroke="#F5DC7A"
+                        stroke-width="4" stroke-linecap="round" />
+                    <path d="M 235 215 Q 242 222, 238 230 Q 230 233, 226 226 Q 228 218, 233 218" fill="none"
+                        stroke="#F5DC7A" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="30" cy="220" r="6" fill="#BFE7FF" stroke="#7FBFE0" stroke-width="2.5" />
+                    <circle cx="245" cy="195" r="6" fill="#BFE7FF" stroke="#7FBFE0" stroke-width="2.5" />
+                </svg>
+            </div>
+
+        </div>
+
+        <div class="message" id="message">
+            ดอกไม้ช่อนี้สำหรับเธอนะ<br>
+            ขอให้ยิ้มสดใสเหมือนดอกไม้พวกนี้เลย
+        </div>
+
+        <div class="btn-area">
+            <a href="#" class="btn hidden" id="btnBack">กลับหน้าเมนู</a>
+        </div>
+
+    </div>
+
+    <script>
+        let opened = false;
+        const giftBox = document.getElementById("giftBox");
+
+        const shakeInterval = setInterval(() => {
+            if (!opened) {
+                giftBox.classList.add("shake");
+                setTimeout(() => giftBox.classList.remove("shake"), 1500);
+            } else {
+                clearInterval(shakeInterval);
+            }
+        }, 3000);
+
+        function openGift() {
+            if (opened) return;
+            opened = true;
+
+            const bouquet = document.getElementById("bouquet");
+            const message = document.getElementById("message");
+            const subtitle = document.getElementById("subtitle");
+            const btnBack = document.getElementById("btnBack");
+            const stage = document.getElementById("stage");
+            const burst = document.getElementById("burst");
+
+            giftBox.classList.remove("shake");
+            giftBox.classList.add("opening");
+
+            //const emojis = ["✨", "💖", "♡", "🌸", "💕", "⭐", "💫", "✿"];
+            const emojis = [""];
+            for (let i = 0; i < 10; i++) {
+                const span = document.createElement("span");
+                span.textContent = emojis[i % emojis.length];
+                const angle = (i / 10) * Math.PI * 2;
+                const dist = 80 + Math.random() * 40;
+                span.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+                span.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+                span.style.animationDelay = (i * 0.05) + "s";
+                burst.appendChild(span);
+            }
+
+            setTimeout(() => {
+                giftBox.classList.add("hide");
+                bouquet.classList.add("show");
+            }, 600);
+
+            setTimeout(() => {
+                bouquet.classList.add("sway");
+            }, 1900);
+
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement("div");
+                    heart.className = "floating-heart";
+                    heart.style.left = (25 + Math.random() * 50) + "%";
+                    heart.style.bottom = "35%";
+                    heart.style.animationDelay = (Math.random() * 0.4) + "s";
+                    stage.appendChild(heart);
+                    setTimeout(() => heart.remove(), 3000);
+                }, 900 + i * 180);
+            }
+
+            subtitle.textContent = "รับแล้วนะ ขอบคุณที่รับไว้";
+
+            setTimeout(() => {
+                message.classList.add("show");
+                btnBack.classList.remove("hidden");
+            }, 2100);
+        }
+    </script>
+
+</body>
+
+</html>
