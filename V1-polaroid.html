@@ -115,8 +115,7 @@
         }
 
         .polaroid-wrapper.show {
-            opacity: 1;
-            transform: translateY(0);
+            animation: slideUp 1s ease forwards;
         }
 
         @keyframes slideUp {
@@ -656,7 +655,7 @@
             flash.classList.add("active");
             flashUnit.classList.add("flashing");
 
-            wrapper.classList.add("show");
+            setTimeout(() => wrapper.classList.add("show"), 300);
 
             btnTake.classList.add("hidden");
             setTimeout(() => btnShake.classList.remove("hidden"), 1200);
